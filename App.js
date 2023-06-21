@@ -1,48 +1,60 @@
-import { useState } from "react";
-import { StyleSheet, Text, View, Button, TextInput } from "react-native";
+import React, { useState } from "react";
+import { View, TextInput, Button, StyleSheet } from "react-native";
 
 export default function App() {
-  const [enteredgoaltext, setenteredgoaltext] = useState("default value");
-  //user's input can be stored and updated within enteredgoaltext using the setenteredgoaltext function.
+  const [lender, setLenderName] = useState("");
+  const [receiver, setreceiver] = useState("");
+  const [date, setDate] = useState("");
+  const [amount, setAmount] = useState("");
 
-  const [coursegoals, setgoals] = useState([]);
-  //setgoals can be used to hold a list of course goals, which can be updated dynamically through the "setgoals" function.
-  //The initial value passed to the useState hook is an empty array ([]) which means "coursegoals" will hold an array of values.
-  function goalinputhandler(enteredtext) {
-    setenteredgoaltext(enteredtext);
-  }
+  const FormSubmit = async () => {
+    console.warn({ lender, receiver, amount, date });
+    let data = {
+      lender, // The LenderName field in the skeleton struct corresponds to lender in the frontend code.
+      receiver,
+      amount: parseFloat(amount),
+      date,
+    };
+    // const url = "http://localhost:8080/transaction";
 
-  function addgoalhandler() {
-    setgoals([...coursegoals, enteredgoaltext]);
-    if (coursegoals.includes(enteredgoaltext)) {
-      alert("Goal already exists");
-      return;
-    }
-    // It first creates a new array by using the spread operator ("...") to copy all the values from the current "coursegoals" array, and then appends the value of "enteredgoaltext" to the end of the copied array.
-  }
+    let result = await fetch("http://localhost:8080/transaction", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" }, // Updated content type
+      body: JSON.stringify(data),
+    });
+
+    result = await result.json();
+    console.warn(result);
+  };
+
   return (
     <View style={styles.appcontainer}>
-      <View style={styles.inputcontainer}>
+      <View style={styles.form}>
         <TextInput
-          onChangeText={goalinputhandler}
-          placeholder="your course goal !! "
-          style={{
-            borderColor: "black",
-            borderWidth: 2,
-            width: "80%",
-            marginRight: 8,
-            padding: 6,
-            alignContent: "center",
-          }}
+          style={styles.input}
+          placeholder="Lender Name"
+          value={lender}
+          onChangeText={(text) => setLenderName(text)}
         />
-        <Button title="add goal" onPress={addgoalhandler} />
-      </View>
-
-      <View style={styles.goalcontainer}>
-        {coursegoals.map((goal) => (
-          <Text key={goal}>{goal}</Text>
-          //This code uses the map function to iterate over the courseGoals array and render a <text> component for each goal.
-        ))}
+        <TextInput
+          style={styles.input}
+          placeholder="Receiver Name"
+          value={receiver}
+          onChangeText={(text) => setreceiver(text)}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Date"
+          value={date}
+          onChangeText={(text) => setDate(text)}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Total Amount"
+          value={amount}
+          onChangeText={(text) => setAmount(text)}
+        />
+        <Button title="Submit" color="green" onPress={FormSubmit} />
       </View>
     </View>
   );
@@ -51,19 +63,16 @@ export default function App() {
 const styles = StyleSheet.create({
   appcontainer: {
     flex: 1,
-    paddingTop: 50,
-    paddingHorizontal: 16,
-  },
-  inputcontainer: {
-    flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 24,
-    borderBottomWidth: 1,
-    borderBottomColor: "gray",
-    flex: 1,
   },
-  goalcontainer: {
-    flex: 4,
+  form: {
+    width: "80%",
+  },
+  input: {
+    borderWidth: 0.7,
+    borderColor: "black",
+    padding: 10,
+    margin: 10,
   },
 });
